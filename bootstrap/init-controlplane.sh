@@ -11,7 +11,7 @@ sudo dnf update -y
 ###############################################
 # 2. Install Base Tools
 ###############################################
-sudo dnf install -y git unzip tar curl jq python3 python3-pip
+sudo dnf install -y git unzip tar jq python3 python3-pip
 
 ###############################################
 # 3. Create RAIOS Directory
@@ -32,38 +32,15 @@ else
 fi
 
 ###############################################
-# 5. Install AWS CLI (v2)
+# 5. Install Floci (AWS emulator)
 ###############################################
-if ! command -v aws &> /dev/null; then
-    echo "[RAIOS] Installing AWS CLI..."
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-    unzip /tmp/awscliv2.zip -d /tmp
-    sudo /tmp/aws/install
-fi
-
-###############################################
-# 6. Install Floci (AWS emulator)
-###############################################
-FLOCI_DIR="/opt/raios/floci"
-
-if [ ! -d "$FLOCI_DIR" ]; then
+if ! command -v floci &> /dev/null; then
     echo "[RAIOS] Installing Floci..."
-    mkdir -p $FLOCI_DIR
-    cd $FLOCI_DIR
-
-    # Replace with your floci download source
-    curl -L https://example.com/floci-latest.tar.gz -o floci.tar.gz
-    tar -xvf floci.tar.gz
+    curl -fsSL https://floci.io/install.sh | sh
 fi
 
 ###############################################
-# 7. Configure Floci
-###############################################
-echo "[RAIOS] Configuring Floci..."
-cp /opt/raios/raios-cloud/controlplane/floci/config/* $FLOCI_DIR/
-
-###############################################
-# 8. Install Floci systemd service
+# 6. Install floci.service
 ###############################################
 echo "[RAIOS] Installing floci.service..."
 
@@ -74,7 +51,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=$FLOCI_DIR/floci --config $FLOCI_DIR/floci.yaml
+ExecStart=/usr/local/bin/floci start
 Restart=always
 
 [Install]
@@ -86,7 +63,7 @@ sudo systemctl enable floci
 sudo systemctl restart floci
 
 ###############################################
-# 9. Install Orchestrator
+# 7. Install Orchestrator
 ###############################################
 echo "[RAIOS] Setting up Python Orchestrator..."
 
@@ -95,7 +72,7 @@ mkdir -p $ORCH_DIR
 cp -r /opt/raios/raios-cloud/controlplane/orchestrator/* $ORCH_DIR/
 
 ###############################################
-# 10. Orchestrator systemd service
+# 8. Orchestrator systemd service
 ###############################################
 echo "[RAIOS] Installing raios-orchestrator.service..."
 
@@ -118,13 +95,14 @@ sudo systemctl enable raios-orchestrator
 sudo systemctl restart raios-orchestrator
 
 ###############################################
-# 11. Controlplane Identity File
+# 9. Controlplane Identity File
 ###############################################
 echo "role: controlplane" | sudo tee /etc/raios-node.yaml
 
 ###############################################
-# 12. Final Status
+# 10. Final Status
 ###############################################
 echo "[RAIOS] Control Plane Initialization Complete."
 systemctl status floci --no-pager
 systemctl status raios-orchestrator --no-pager
+
