@@ -33,3 +33,7 @@ class Region:
     def is_healthy(self) -> bool:
         return all(n.healthy for n in self.nodes) if self.nodes else False
 
+# Global region instance used by orchestrator
+region = Region()
+    
+
