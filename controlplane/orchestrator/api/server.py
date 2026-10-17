@@ -16,8 +16,8 @@ class OrchestratorHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path == "/region/status":
-           data = {
+    if self.path == "/region/status":
+        data = {
             "region": region.name,
             "nodes": [n.to_dict() for n in region.nodes],
             "healthy": region.is_healthy(),
@@ -30,6 +30,7 @@ class OrchestratorHandler(BaseHTTPRequestHandler):
 
     else:
         self._send_json({"error": "not_found"}, status=404)
+
 
 
     def do_POST(self):
