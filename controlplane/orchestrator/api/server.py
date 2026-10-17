@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Import region model
 from models.region import region
+from models.node import Node
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -30,6 +31,24 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json({"controlplane_ip": ip})
 
         # Default 404
+        else:
+            self._send_json({"error": "not_found"}, status=404)
+
+    def do_POST(self):
+        # Register a dataplane node
+        if self.path == "/register-node":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body)
+
+            node_id = data.get("id")
+            role = data.get("role")
+            ip = data.get("ip")
+
+            new_node = Node(node_id, role, ip)
+            region.add_node(new_node)
+
+            self._send_json({"status": "registered", "node": new_node.to_dict()})
         else:
             self._send_json({"error": "not_found"}, status=404)
 
