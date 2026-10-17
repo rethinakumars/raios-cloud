@@ -1,68 +1,40 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
-from models.region import Region
-from provider_aws.aws_driver import AwsDriver
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-region = Region()
-aws_driver = AwsDriver()
+# Import region model
+from models.region import region
 
-class OrchestratorHandler(BaseHTTPRequestHandler):
-    def _send_json(self, payload, status=200):
-        body = json.dumps(payload).encode("utf-8")
+
+class RequestHandler(BaseHTTPRequestHandler):
+
+    def _send_json(self, data, status=200):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(json.dumps(data).encode())
 
     def do_GET(self):
-    if self.path == "/region/status":
-        data = {
-            "region": region.name,
-            "nodes": [n.to_dict() for n in region.nodes],
-            "healthy": region.is_healthy(),
-        }
-        self._send_json(data)
+        # Region status endpoint
+        if self.path == "/region/status":
+            data = {
+                "region": region.name,
+                "nodes": [n.to_dict() for n in region.nodes],
+                "healthy": region.is_healthy(),
+            }
+            self._send_json(data)
 
-    elif self.path == "/metadata/controlplane-ip":
-        ip = self.server.server_address[0]
-        self._send_json({"controlplane_ip": ip})
+        # Metadata endpoint: controlplane private IP
+        elif self.path == "/metadata/controlplane-ip":
+            ip = self.server.server_address[0]
+            self._send_json({"controlplane_ip": ip})
 
-    else:
-        self._send_json({"error": "not_found"}, status=404)
-
-
-
-    def do_POST(self):
-        if self.path == "/register-node":
-            length = int(self.headers.get("Content-Length", 0))
-            raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-            try:
-                payload = json.loads(raw)
-            except json.JSONDecodeError:
-                self._send_json({"error": "invalid_json"}, status=400)
-                return
-
-            node_id = payload.get("id")
-            role = payload.get("role", "dataplane")
-            ip = payload.get("ip")
-
-            if not node_id or not ip:
-                self._send_json({"error": "missing_fields"}, status=400)
-                return
-
-            region.add_node(node_id=node_id, role=role, ip=ip)
-            self._send_json({"status": "registered", "node": node_id})
+        # Default 404
         else:
             self._send_json({"error": "not_found"}, status=404)
 
+
 def run_server(host="0.0.0.0", port=8080):
-    server = HTTPServer((host, port), OrchestratorHandler)
-    print(f"[RAIOS] Orchestrator listening on {host}:{port}")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
+    server = HTTPServer((host, port), RequestHandler)
+    print(f"[RAIOS] Orchestrator running on {host}:{port}")
+    server.serve_forever()
 
