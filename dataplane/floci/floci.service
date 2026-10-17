@@ -4,7 +4,7 @@ After=network.target docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/raios/floci-bootstrap.sh
+ExecStart=/opt/raios/floci/floci-bootstrap.sh
 RemainAfterExit=yes
 
 [Install]
