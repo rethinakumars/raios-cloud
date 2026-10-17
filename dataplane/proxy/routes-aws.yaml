@@ -1,0 +1,8 @@
+routes:
+  - service: s3
+    port: 4566
+  - service: dynamodb
+    port: 4566
+  - service: sqs
+    port: 4566
+
