@@ -1,0 +1,21 @@
+services:
+  s3:
+    path: "/aws/s3"
+    method: "GET"
+    dataplane_selector: "round_robin"
+
+  dynamodb:
+    path: "/aws/dynamodb"
+    method: "POST"
+    dataplane_selector: "round_robin"
+
+  sqs:
+    path: "/aws/sqs"
+    method: "POST"
+    dataplane_selector: "round_robin"
+
+  lambda:
+    path: "/aws/lambda"
+    method: "POST"
+    dataplane_selector: "round_robin"
+
