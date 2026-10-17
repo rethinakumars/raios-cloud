@@ -1,0 +1,12 @@
+[Unit]
+Description=Floci AWS Emulator
+After=network.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/raios/floci-bootstrap.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+
