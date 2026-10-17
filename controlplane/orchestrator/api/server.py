@@ -25,9 +25,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # Metadata endpoint: controlplane private IP
         elif self.path == "/metadata/controlplane-ip":
-    import subprocess
-    ip = subprocess.check_output("hostname -I", shell=True).decode().split()[0]
-    self._send_json({"controlplane_ip": ip})
+            import subprocess
+            ip = subprocess.check_output("hostname -I", shell=True).decode().split()[0]
+            self._send_json({"controlplane_ip": ip})
+
         # Default 404
         else:
             self._send_json({"error": "not_found"}, status=404)
