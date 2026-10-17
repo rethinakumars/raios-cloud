@@ -17,14 +17,20 @@ class OrchestratorHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/region/status":
-            data = {
-                "region": region.name,
-                "nodes": [n.to_dict() for n in region.nodes],
-                "healthy": region.is_healthy(),
-            }
-            self._send_json(data)
-        else:
-            self._send_json({"error": "not_found"}, status=404)
+           data = {
+            "region": region.name,
+            "nodes": [n.to_dict() for n in region.nodes],
+            "healthy": region.is_healthy(),
+        }
+        self._send_json(data)
+
+    elif self.path == "/metadata/controlplane-ip":
+        ip = self.server.server_address[0]
+        self._send_json({"controlplane_ip": ip})
+
+    else:
+        self._send_json({"error": "not_found"}, status=404)
+
 
     def do_POST(self):
         if self.path == "/register-node":
