@@ -29,7 +29,7 @@ fi
 ###############################################
 # 1. Discover controlplane IP via metadata
 ###############################################
-CONTROLPLANE_IP=$(curl -s http://localhost:8080/metadata/controlplane-ip | jq -r '.controlplane_ip')
+CONTROLPLANE_IP=$(curl -s http:///172.31.46.223:8080/metadata/controlplane-ip | jq -r '.controlplane_ip')
 ORCHESTRATOR_PORT="8080"
 
 ###############################################
